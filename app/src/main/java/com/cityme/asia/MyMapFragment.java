@@ -14,6 +14,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.StringRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -23,6 +27,12 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Iterator;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -140,9 +150,44 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
         this.mLastLocation = LocationServices.FusedLocationApi.getLastLocation(this.mGoogleApiClient);
         if (this.mLastLocation != null && this.mMap != null) {
             final LatLng current = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
-            this.mMap.addMarker(new MarkerOptions().position(current).title("Your location"));
-            this.mMap.moveCamera(CameraUpdateFactory.newLatLng(current));
+            this.mMap.addMarker(new MarkerOptions().position(current).title("You are here"));
+            this.mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(current, 17));
 
+            searchAll();
         }
+    }
+
+    private void searchAll() {
+        String url = "http://api.cityme.asia/search?categories=&skip=0&limit=15&sort=rating&location=&priceRange=&serves=&fullmap=";
+        // pass second argument as "null" for GET requests
+        StringRequest req = new StringRequest(url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                VolleyLog.v("Response:%n %s", response);
+                try {
+                    JSONObject obj = new JSONObject(response);
+                    JSONObject entities = obj.getJSONObject("entities");
+                    JSONObject localBizs = entities.getJSONObject("localBizs");
+                    Iterator<String> keys = localBizs.keys();
+                    while (keys.hasNext()) {
+                        String currentKey = keys.next();
+                        JSONObject currentObject = localBizs.getJSONObject(currentKey);
+                        Log.d(currentKey, String.format("%s - %s - %s",
+                                currentObject.getString("address"), currentObject.getString("city"),
+                                currentObject.getString("name")));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.e("Error: ", error.getMessage());
+            }
+        });
+
+        // add the request object to the queue to be executed
+        AppController.getInstance().addToRequestQueue(req);
     }
 }
