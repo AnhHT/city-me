@@ -2,6 +2,7 @@ package com.cityme.asia;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -25,6 +26,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -152,6 +154,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
             final LatLng current = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
             this.mMap.addMarker(new MarkerOptions().position(current).title("You are here"));
             this.mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(current, 17));
+            this.mMap.addCircle(new CircleOptions().center(current).radius(1000).strokeColor(Color.RED));
 
             searchAll();
         }
@@ -165,16 +168,21 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
             public void onResponse(String response) {
                 VolleyLog.v("Response:%n %s", response);
                 try {
-                    JSONObject obj = new JSONObject(response);
-                    JSONObject entities = obj.getJSONObject("entities");
-                    JSONObject localBizs = entities.getJSONObject("localBizs");
-                    Iterator<String> keys = localBizs.keys();
+                    final JSONObject obj = new JSONObject(response);
+                    final JSONObject entities = obj.getJSONObject("entities");
+                    final JSONObject localBizs = entities.getJSONObject("localBizs");
+                    final Iterator<String> keys = localBizs.keys();
                     while (keys.hasNext()) {
-                        String currentKey = keys.next();
-                        JSONObject currentObject = localBizs.getJSONObject(currentKey);
+                        final String currentKey = keys.next();
+                        final JSONObject currentObject = localBizs.getJSONObject(currentKey);
                         Log.d(currentKey, String.format("%s - %s - %s",
                                 currentObject.getString("address"), currentObject.getString("city"),
                                 currentObject.getString("name")));
+                        final JSONObject location = currentObject.getJSONObject("location");
+                        final JSONArray coo = location.getJSONArray("coordinates");
+                        final Double lat = coo.getDouble(0);
+                        final Double lng = coo.getDouble(1);
+                        Log.d(currentKey, String.format("%s - %s", lat.toString(), lng.toString()));
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
