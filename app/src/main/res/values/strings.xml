@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Cityme</string>
+    <string name="app_name">Just4Test</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
