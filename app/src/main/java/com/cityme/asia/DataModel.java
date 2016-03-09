@@ -76,7 +76,11 @@ public class DataModel implements ClusterItem {
     }
 
     public String getTitle() {
-        return String.format("Rating: %s, %s", getRating(), formatNumber(getDistance()));
+        if (getRating() <= 0) {
+            return String.format("%s, %s", getAddress(), formatNumber(getDistance()));
+        }
+
+        return String.format("%s, Rating: %s, %s", getAddress(), getRating(), formatNumber(getDistance()));
     }
 
     private String formatNumber(double distance) {

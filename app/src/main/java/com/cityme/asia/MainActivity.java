@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -42,6 +43,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -55,7 +58,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final int REQUEST_LOCATION = 0;
     private final String TAG = MyMapFragment.class.getSimpleName();
-    private final String url = "http://api.cityme.asia/search?categories=&skip=0&limit=100&sort=rating&location=&priceRange=&serves=&fullmap=";
+    private final String API_SEARCH = "http://api.cityme.asia/search?categories=&skip=0";
+    private final String includeLocation = API_SEARCH + "&sort=near&location=";
     private GoogleMap mGoogleMap;
     private Context mContext;
     private GoogleApiClient mGoogleApiClient;
@@ -63,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ClusterManager<DataModel> mClusterManager;
     private Marker currentMarker;
     private LatLng currentLatLng;
+    private float zoomLevel = 10f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +75,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
         this.mContext = getApplicationContext();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        FloatingActionButton myLocation = (FloatingActionButton) findViewById(R.id.fabLocation);
+        myLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mGoogleMap.clear();
+                currentLatLng = null;
+                zoomLevel = mGoogleMap.getCameraPosition().zoom;
+                Log.d(TAG, "Zoom Level: " + zoomLevel);
+                getLocation();
+            }
+        });
+
         this.setSupportActionBar(toolbar);
         this.setUpMap();
         this.buildGoogleApiClient();
@@ -163,14 +180,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (this.mLastLocation != null && this.mGoogleMap != null) {
             if (this.currentLatLng == null) {
                 this.currentLatLng = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
-                this.mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 9.5f));
+                this.mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, zoomLevel));
                 this.currentMarker = this.mGoogleMap.addMarker(new MarkerOptions().position(currentLatLng).title("You are here"));
-                this.searchAll();
+                try {
+                    this.searchAll();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
-    private void searchAll() {
+    private void searchAll() throws UnsupportedEncodingException {
         Log.d(TAG, "Search again");
         this.mClusterManager = new ClusterManager<>(mContext, this.mGoogleMap);
         this.mClusterManager.setRenderer(new DataModelRenderer());
@@ -182,8 +203,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         this.mClusterManager.setOnClusterItemClickListener(this);
         this.mClusterManager.setOnClusterItemInfoWindowClickListener(this);
 
-        // pass second argument as "null" for GET requests
-        StringRequest req = new StringRequest(url, new Response.Listener<String>() {
+        final String encodedValue = URLEncoder.encode(String.format("%s,%s", this.currentLatLng.latitude,
+                this.currentLatLng.longitude), "UTF-8");
+        final String formattedUrl = this.includeLocation + encodedValue;
+        Log.d(TAG, formattedUrl);
+        StringRequest req = new StringRequest(formattedUrl, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 VolleyLog.v("Response:%n %s", response);
@@ -232,7 +256,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         model.setName(object.getString("name"));
         model.setAddress(object.getString("address"));
         model.setCity(object.getString("city"));
-        model.setRating(object.getDouble("rating"));
+        if (!object.get("rating").toString().equals("null")) {
+            model.setRating(object.getDouble("rating"));
+        }
+
         if (object.has("mainPhoto")) {
             model.setImageUrl(object.getString("mainPhoto"));
         }
