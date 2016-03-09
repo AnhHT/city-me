@@ -20,6 +20,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -72,10 +73,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         this.setSupportActionBar(toolbar);
         this.setUpMap();
         this.buildGoogleApiClient();
-
-        /*FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.frame_container, new MyMapFragment());
-        fragmentTransaction.commit();*/
     }
 
     @Override
@@ -300,7 +297,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Draw a single person.
             // Set the info window to show their name.
 
-            mImageView.setImageResource(model.getCategoryImage());
+            /*mImageView.setImageResource(model.getCategoryImage());*/
+            Glide.with(mContext)
+                    .load(model.getImageUrl())
+                    .centerCrop()
+                    .placeholder(model.getCategoryImage())
+                    .crossFade()
+                    .into(mImageView);
+
             mRatingTextView.setText(model.getName());
             Bitmap icon = mIconGenerator.makeIcon();
             markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(model.getTitle());
