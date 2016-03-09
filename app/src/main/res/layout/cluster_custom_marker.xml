@@ -10,11 +10,13 @@
         android:layout_height="@dimen/item_image" />
 
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:alpha=".8"
+        android:background="@android:color/black"
         android:paddingLeft="@dimen/item_padding"
-        android:paddingRight="@dimen/item_padding" />
+        android:paddingRight="@dimen/item_padding"
+        android:textAppearance="@style/Bubble.TextAppearance.Light" />
 </FrameLayout>

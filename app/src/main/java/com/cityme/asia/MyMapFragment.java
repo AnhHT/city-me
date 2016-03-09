@@ -4,31 +4,30 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
-import com.bumptech.glide.Glide;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -52,7 +51,7 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 /**
  * Created by AnhHoang on 2/25/2016.
  */
-public class MyMapFragment extends Fragment implements OnMapReadyCallback
+public class MyMapFragment extends FragmentActivity implements OnMapReadyCallback
         , GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         ClusterManager.OnClusterClickListener<DataModel>,
         ClusterManager.OnClusterInfoWindowClickListener<DataModel>,
@@ -61,11 +60,12 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
 
     private static final int REQUEST_LOCATION = 0;
     private final String TAG = MyMapFragment.class.getSimpleName();
+    private final String url = "http://api.cityme.asia/search?categories=&skip=0&limit=100&sort=rating&location=&priceRange=&serves=&fullmap=";
     private GoogleMap mGoogleMap;
     private Context mContext;
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
-    private MapView mapView;
+    /*private MapView mapView;*/
     private LatLng current;
     private ClusterManager<DataModel> mClusterManager;
     private Bundle bundle;
@@ -73,20 +73,25 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.mContext = getActivity().getApplicationContext();
+        this.mContext = getApplicationContext();
+        this.setUpMap();
     }
 
+/*
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_map, container, false);
         this.bundle = savedInstanceState;
-        this.mapView = (MapView) v.findViewById(R.id.mapView);
+        */
+/*this.mapView = (MapView) v.findViewById(R.id.mapView);
         this.mapView.onCreate(savedInstanceState);
-        this.mapView.getMapAsync(this);
+        this.mapView.getMapAsync(this);*//*
+
         this.buildGoogleApiClient();
         return v;
     }
+*/
 
     @Override
     public void onStart() {
@@ -96,17 +101,17 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
         }
     }
 
-    @Override
+    /*@Override
     public void onResume() {
         super.onResume();
         this.mapView.onResume();
-    }
+    }*/
 
-    @Override
+    /*@Override
     public void onPause() {
         super.onPause();
         this.mapView.onPause();
-    }
+    }*/
 
     @Override
     public void onStop() {
@@ -114,6 +119,11 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
         if (this.mGoogleApiClient.isConnected()) {
             this.mGoogleApiClient.disconnect();
         }
+    }
+
+    private void setUpMap() {
+        ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).
+                getMapAsync(this);
     }
 
     /**
@@ -139,7 +149,12 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Log.d(TAG, "onMapReady");
+        if (this.mGoogleMap != null) {
+            return;
+        }
+
         this.mGoogleMap = googleMap;
+        this.searchAll();
     }
 
     @Override
@@ -147,7 +162,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
         Log.d(TAG, "onConnected");
         if (ActivityCompat.checkSelfPermission(this.mContext, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this.mContext, ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION}, REQUEST_LOCATION);
+            /*requestPermissions(new String[]{ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION}, REQUEST_LOCATION);*/
         }
 
         getLocation();
@@ -178,25 +193,24 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
     private void getLocation() {
         this.mLastLocation = LocationServices.FusedLocationApi.getLastLocation(this.mGoogleApiClient);
         if (this.mLastLocation != null && this.mGoogleMap != null) {
-            current = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
-            this.mClusterManager = new ClusterManager<>(mContext, this.mGoogleMap);
-            this.mClusterManager.setRenderer(new DataModelRenderer(this.bundle));
-            this.mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(current, 10));
+            this.current = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
+            this.mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(current, 9.5f));
             this.mGoogleMap.addMarker(new MarkerOptions().position(current).title("You are here"));
-            this.mGoogleMap.addCircle(new CircleOptions().center(current).strokeColor(Color.RED).radius(1000));
-            this.mGoogleMap.setOnCameraChangeListener(this.mClusterManager);
-            this.mGoogleMap.setOnMarkerClickListener(mClusterManager);
-            this.mGoogleMap.setOnInfoWindowClickListener(mClusterManager);
-            this.mClusterManager.setOnClusterClickListener(this);
-            this.mClusterManager.setOnClusterInfoWindowClickListener(this);
-            this.mClusterManager.setOnClusterItemClickListener(this);
-            this.mClusterManager.setOnClusterItemInfoWindowClickListener(this);
-            searchAll();
+            this.mGoogleMap.addCircle(new CircleOptions().center(current).strokeColor(Color.RED).radius(1000d));
         }
     }
 
     private void searchAll() {
-        String url = "http://api.cityme.asia/search?categories=&skip=0&limit=55&sort=rating&location=&priceRange=&serves=&fullmap=";
+        this.mClusterManager = new ClusterManager<>(mContext, this.mGoogleMap);
+        this.mClusterManager.setRenderer(new DataModelRenderer(this.bundle));
+        this.mGoogleMap.setOnCameraChangeListener(this.mClusterManager);
+        this.mGoogleMap.setOnMarkerClickListener(mClusterManager);
+        this.mGoogleMap.setOnInfoWindowClickListener(mClusterManager);
+        this.mClusterManager.setOnClusterClickListener(this);
+        this.mClusterManager.setOnClusterInfoWindowClickListener(this);
+        this.mClusterManager.setOnClusterItemClickListener(this);
+        this.mClusterManager.setOnClusterItemInfoWindowClickListener(this);
+
         // pass second argument as "null" for GET requests
         StringRequest req = new StringRequest(url, new Response.Listener<String>() {
             @Override
@@ -242,6 +256,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
     private DataModel getItem(JSONObject object) throws JSONException {
         final JSONObject location = object.getJSONObject("location");
         final JSONArray coo = location.getJSONArray("coordinates");
+        final JSONArray categories = object.getJSONArray("categories");
         DataModel model = new DataModel(coo.getDouble(1), coo.getDouble(0));
         model.setName(object.getString("name"));
         model.setAddress(object.getString("address"));
@@ -251,15 +266,19 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
             model.setImageUrl(object.getString("mainPhoto"));
         }
 
+        if (categories.length() > 0) {
+            model.setCategory(categories.getString(0));
+        }
+
         return model;
     }
 
-    public void onSaveInstanceState(Bundle savedInstanceState) {
+    /*public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
         this.mapView.onSaveInstanceState(savedInstanceState);
-    }
+    }*/
 
-    @Override
+    /*@Override
     public void onLowMemory() {
         super.onLowMemory();
         this.mapView.onLowMemory();
@@ -269,7 +288,7 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
     public void onDestroy() {
         super.onDestroy();
         this.mapView.onDestroy();
-    }
+    }*/
 
     @Override
     public boolean onClusterClick(Cluster<DataModel> cluster) {
@@ -298,19 +317,17 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
         private final IconGenerator mClusterIconGenerator = new IconGenerator(mContext);
         private final ImageView mImageView;
         private final ImageView mClusterImageView;
-        private final TextView mName;
         private final int mDimension;
 
         public DataModelRenderer(Bundle bundle) {
             super(mContext, mGoogleMap, mClusterManager);
 
-            View multiProfile = getLayoutInflater(bundle).inflate(R.layout.custom_marker, null);
+            View multiProfile = getLayoutInflater().inflate(R.layout.cluster_custom_marker, null);
             mClusterIconGenerator.setContentView(multiProfile);
             mClusterImageView = (ImageView) multiProfile.findViewById(R.id.image);
-            mName = (TextView) multiProfile.findViewById(R.id.title);
 
             mImageView = new ImageView(mContext);
-            mDimension = (int) getResources().getDimension(R.dimen.item_image);
+            mDimension = (int) getResources().getDimension(R.dimen.item_image_small);
             mImageView.setLayoutParams(new ViewGroup.LayoutParams(mDimension, mDimension));
             int padding = (int) getResources().getDimension(R.dimen.item_padding);
             mImageView.setPadding(padding, padding, padding, padding);
@@ -321,18 +338,31 @@ public class MyMapFragment extends Fragment implements OnMapReadyCallback
         protected void onBeforeClusterItemRendered(DataModel model, MarkerOptions markerOptions) {
             // Draw a single person.
             // Set the info window to show their name.
-            /*mName.setText(model.getTitle());*/
-            if (!model.getImageUrl().isEmpty()) {
-                Log.d(TAG, model.getImageUrl());
-                Glide.with(getActivity()).load(model.getImageUrl()).into(mImageView);
-                Glide.with(getActivity()).load(model.getImageUrl()).into(mClusterImageView);
-            }
+
+            mImageView.setImageResource(model.getCategoryImage());
             Bitmap icon = mIconGenerator.makeIcon();
-            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(model.getAddress());
+            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(model.getName());
         }
 
         @Override
         protected void onBeforeClusterRendered(Cluster<DataModel> cluster, MarkerOptions markerOptions) {
+            List<Drawable> profilePhotos = new ArrayList<Drawable>(Math.min(4, cluster.getSize()));
+            int width = mDimension;
+            int height = mDimension;
+
+            for (DataModel p : cluster.getItems()) {
+                // Draw 4 at most.
+                if (profilePhotos.size() == 4) break;
+
+                Drawable drawable = ContextCompat.getDrawable(mContext, p.getCategoryImage());
+                drawable.setBounds(0, 0, width, height);
+                profilePhotos.add(drawable);
+            }
+
+            MultiDrawable multiDrawable = new MultiDrawable(profilePhotos);
+            multiDrawable.setBounds(0, 0, width, height);
+            mClusterImageView.setImageDrawable(multiDrawable);
+
             Bitmap icon = mClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
             markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
         }
