@@ -21,6 +21,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
+import com.cityme.asia.model.SearchModel;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -53,10 +54,10 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
  */
 public class MyMapFragment extends FragmentActivity implements OnMapReadyCallback
         , GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        ClusterManager.OnClusterClickListener<DataModel>,
-        ClusterManager.OnClusterInfoWindowClickListener<DataModel>,
-        ClusterManager.OnClusterItemClickListener<DataModel>,
-        ClusterManager.OnClusterItemInfoWindowClickListener<DataModel> {
+        ClusterManager.OnClusterClickListener<SearchModel>,
+        ClusterManager.OnClusterInfoWindowClickListener<SearchModel>,
+        ClusterManager.OnClusterItemClickListener<SearchModel>,
+        ClusterManager.OnClusterItemInfoWindowClickListener<SearchModel> {
 
     private static final int REQUEST_LOCATION = 0;
     private final String TAG = MyMapFragment.class.getSimpleName();
@@ -67,7 +68,7 @@ public class MyMapFragment extends FragmentActivity implements OnMapReadyCallbac
     private Location mLastLocation;
     /*private MapView mapView;*/
     private LatLng current;
-    private ClusterManager<DataModel> mClusterManager;
+    private ClusterManager<SearchModel> mClusterManager;
     private Bundle bundle;
 
     @Override
@@ -218,8 +219,8 @@ public class MyMapFragment extends FragmentActivity implements OnMapReadyCallbac
                 VolleyLog.v("Response:%n %s", response);
                 try {
                     final JSONObject obj = new JSONObject(response);
-                    List<DataModel> dataModels = fromJson(obj);
-                    for (DataModel item : dataModels) {
+                    List<SearchModel> searchModels = fromJson(obj);
+                    for (SearchModel item : searchModels) {
                         mClusterManager.addItem(item);
                     }
 
@@ -239,8 +240,8 @@ public class MyMapFragment extends FragmentActivity implements OnMapReadyCallbac
         AppController.getInstance().addToRequestQueue(req);
     }
 
-    private List<DataModel> fromJson(JSONObject response) throws JSONException {
-        final List<DataModel> data = new ArrayList<>();
+    private List<SearchModel> fromJson(JSONObject response) throws JSONException {
+        final List<SearchModel> data = new ArrayList<>();
         final JSONObject entities = response.getJSONObject("entities");
         final JSONObject localBizs = entities.getJSONObject("localBizs");
         final Iterator<String> keys = localBizs.keys();
@@ -253,11 +254,11 @@ public class MyMapFragment extends FragmentActivity implements OnMapReadyCallbac
         return data;
     }
 
-    private DataModel getItem(JSONObject object) throws JSONException {
+    private SearchModel getItem(JSONObject object) throws JSONException {
         final JSONObject location = object.getJSONObject("location");
         final JSONArray coo = location.getJSONArray("coordinates");
         final JSONArray categories = object.getJSONArray("categories");
-        DataModel model = new DataModel(coo.getDouble(1), coo.getDouble(0));
+        SearchModel model = new SearchModel(coo.getDouble(1), coo.getDouble(0));
         model.setName(object.getString("name"));
         model.setAddress(object.getString("address"));
         model.setCity(object.getString("city"));
@@ -291,28 +292,28 @@ public class MyMapFragment extends FragmentActivity implements OnMapReadyCallbac
     }*/
 
     @Override
-    public boolean onClusterClick(Cluster<DataModel> cluster) {
+    public boolean onClusterClick(Cluster<SearchModel> cluster) {
         String firstName = cluster.getItems().iterator().next().getName();
         Toast.makeText(mContext, cluster.getSize() + " (including " + firstName + ")", Toast.LENGTH_SHORT).show();
         return true;
     }
 
     @Override
-    public void onClusterInfoWindowClick(Cluster<DataModel> cluster) {
+    public void onClusterInfoWindowClick(Cluster<SearchModel> cluster) {
 
     }
 
     @Override
-    public boolean onClusterItemClick(DataModel dataModel) {
+    public boolean onClusterItemClick(SearchModel searchModel) {
         return false;
     }
 
     @Override
-    public void onClusterItemInfoWindowClick(DataModel dataModel) {
+    public void onClusterItemInfoWindowClick(SearchModel searchModel) {
 
     }
 
-    private class DataModelRenderer extends DefaultClusterRenderer<DataModel> {
+    private class DataModelRenderer extends DefaultClusterRenderer<SearchModel> {
         private final IconGenerator mIconGenerator = new IconGenerator(mContext);
         private final IconGenerator mClusterIconGenerator = new IconGenerator(mContext);
         private final ImageView mImageView;
@@ -335,7 +336,7 @@ public class MyMapFragment extends FragmentActivity implements OnMapReadyCallbac
         }
 
         @Override
-        protected void onBeforeClusterItemRendered(DataModel model, MarkerOptions markerOptions) {
+        protected void onBeforeClusterItemRendered(SearchModel model, MarkerOptions markerOptions) {
             // Draw a single person.
             // Set the info window to show their name.
 
@@ -345,12 +346,12 @@ public class MyMapFragment extends FragmentActivity implements OnMapReadyCallbac
         }
 
         @Override
-        protected void onBeforeClusterRendered(Cluster<DataModel> cluster, MarkerOptions markerOptions) {
+        protected void onBeforeClusterRendered(Cluster<SearchModel> cluster, MarkerOptions markerOptions) {
             List<Drawable> profilePhotos = new ArrayList<Drawable>(Math.min(4, cluster.getSize()));
             int width = mDimension;
             int height = mDimension;
 
-            for (DataModel p : cluster.getItems()) {
+            for (SearchModel p : cluster.getItems()) {
                 // Draw 4 at most.
                 if (profilePhotos.size() == 4) break;
 

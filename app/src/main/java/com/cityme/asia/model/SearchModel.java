@@ -1,22 +1,14 @@
-package com.cityme.asia;
+package com.cityme.asia.model;
 
+import com.cityme.asia.AppConfig;
+import com.cityme.asia.R;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;
 
 /**
  * Created by AnhHoang on 3/7/2016.
  */
-public class DataModel implements ClusterItem {
-    private static final String EMPTY = "";
-    private static final String API_IMAGE_URL = "http://media.cityme.asia/c35x35/";
-    private static final String CAFE = "Café";
-    private static final String SMALL_RES = "Quán ăn";
-    private static final String RESTAURANT = "Nhà hàng";
-    private static final String BAR_PUB = "Bar/Pub";
-    private static final String BEER_PUB = "Quán bia";
-    private static final String STREET_FOOD = "Ăn vặt";
-    private static final String BAKERY = "Tiệm bánh";
-    private static final String FAST_FOOD = "Ăn nhanh";
+public class SearchModel implements ClusterItem {
     private LatLng mPosition;
     private String name;
     private String address;
@@ -27,17 +19,17 @@ public class DataModel implements ClusterItem {
     private String imageUrl;
     private double distance;
 
-    public DataModel() {
+    public SearchModel() {
 
     }
 
-    public DataModel(double lat, double lng) {
+    public SearchModel(double lat, double lng) {
         mPosition = new LatLng(lat, lng);
     }
 
     public String getAddress() {
         if (address == null)
-            return EMPTY;
+            return AppConfig.EMPTY;
         return address;
     }
 
@@ -47,7 +39,7 @@ public class DataModel implements ClusterItem {
 
     public String getDistrict() {
         if (district == null)
-            return EMPTY;
+            return AppConfig.EMPTY;
         return district;
     }
 
@@ -57,7 +49,7 @@ public class DataModel implements ClusterItem {
 
     public String getCity() {
         if (city == null)
-            return EMPTY;
+            return AppConfig.EMPTY;
         return city;
     }
 
@@ -67,7 +59,7 @@ public class DataModel implements ClusterItem {
 
     public String getName() {
         if (name == null)
-            return EMPTY;
+            return AppConfig.EMPTY;
         return name;
     }
 
@@ -103,21 +95,21 @@ public class DataModel implements ClusterItem {
 
     public int getCategoryImage() {
         switch (getCategory()) {
-            case CAFE:
+            case AppConfig.CAFE:
                 return R.drawable.cafe_24;
-            case BAR_PUB:
+            case AppConfig.BAR_PUB:
                 return R.drawable.cocktail_24;
-            case SMALL_RES:
+            case AppConfig.SMALL_RES:
                 return R.drawable.cento_24;
-            case BEER_PUB:
+            case AppConfig.BEER_PUB:
                 return R.drawable.ceer_24;
-            case RESTAURANT:
+            case AppConfig.RESTAURANT:
                 return R.drawable.cutlery_24;
-            case STREET_FOOD:
+            case AppConfig.STREET_FOOD:
                 return R.drawable.bread_24;
-            case BAKERY:
+            case AppConfig.BAKERY:
                 return R.drawable.pizza_24;
-            case FAST_FOOD:
+            case AppConfig.FAST_FOOD:
                 return R.drawable.hamburger_24;
             default:
                 return R.drawable.cook_24;
@@ -126,10 +118,10 @@ public class DataModel implements ClusterItem {
 
     public String getImageUrl() {
         if (imageUrl == null) {
-            return EMPTY;
+            return AppConfig.EMPTY;
         }
 
-        return String.format("%s%s.jpg", API_IMAGE_URL, imageUrl);
+        return String.format("%s%s.jpg", AppConfig.API_IMAGE_URL, imageUrl);
     }
 
     public void setImageUrl(String imageUrl) {
@@ -138,7 +130,7 @@ public class DataModel implements ClusterItem {
 
     public String getCategory() {
         if (category == null)
-            return EMPTY;
+            return AppConfig.EMPTY;
         return category;
     }
 

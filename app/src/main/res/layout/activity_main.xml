@@ -9,15 +9,39 @@
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:layout_height="wrap_content">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <com.cityme.asia.component.CustomAutoCompleteTextView
+                android:id="@+id/tvSuggest"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_image"
+                android:background="@color/colorWhite"
+                android:imeOptions="flagNoExtractUi|actionSearch"
+                android:inputType="textCapSentences"
+                android:paddingLeft="@dimen/item_padding" />
+
+            <ProgressBar
+                android:id="@+id/pb_loading_indicator"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="@dimen/item_image"
+                android:layout_height="@dimen/item_image"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="@dimen/item_padding"
+                android:visibility="gone" />
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/btnGetSuggestion"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="5dp"
+                android:src="@drawable/ic_search_black_24dp"
+                android:visibility="gone" />
+        </RelativeLayout>
 
     </android.support.design.widget.AppBarLayout>
 
