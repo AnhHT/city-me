@@ -13,9 +13,9 @@ public class AppConfig {
     public static final String BAKERY = "Tiệm bánh";
     public static final String FAST_FOOD = "Ăn nhanh";
     public static final String EMPTY = "";
-    public static String API_URL = "http://api.cityme.asia";
+    public static String API_URL = "https://api.cityme.vn";
     public static String API_SUGGESTION = API_URL + "/suggestions?query=";
     public static String API_SEARCH = API_URL + "/search";
-    public static String API_IMAGE_URL = "http://media.cityme.asia/c35x35/";
+    public static String API_IMAGE_URL = "https://media.cityme.vn/c35x35/";
     public static String API_LOCAL_BIZ = API_URL + "/local-bizs/";
 }

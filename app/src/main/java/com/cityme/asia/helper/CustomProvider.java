@@ -22,6 +22,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 public class CustomProvider extends ContentProvider {
 
@@ -154,7 +155,6 @@ public class CustomProvider extends ContentProvider {
         switch (match) {
             case SUGGESTION_CODE:
                 db.beginTransaction();
-                db.delete(CustomContract.SuggestionEntry.TABLE_NAME, null, null);
                 int returnCount = 0;
                 try {
                     for (ContentValues value : values) {
@@ -167,6 +167,7 @@ public class CustomProvider extends ContentProvider {
                 } finally {
                     db.endTransaction();
                 }
+                Log.d("Provide", "Inserted: " + returnCount);
                 getContext().getContentResolver().notifyChange(uri, null);
                 return returnCount;
             default:

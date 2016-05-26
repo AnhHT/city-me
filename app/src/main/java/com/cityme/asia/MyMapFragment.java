@@ -61,7 +61,7 @@ public class MyMapFragment extends FragmentActivity implements OnMapReadyCallbac
 
     private static final int REQUEST_LOCATION = 0;
     private final String TAG = MyMapFragment.class.getSimpleName();
-    private final String url = "http://api.cityme.asia/search?categories=&skip=0&limit=100&sort=rating&location=&priceRange=&serves=&fullmap=";
+    private final String url = "https://api.cityme.vn/search?categories=&skip=0&limit=100&sort=rating&location=&priceRange=&serves=&fullmap=";
     private GoogleMap mGoogleMap;
     private Context mContext;
     private GoogleApiClient mGoogleApiClient;

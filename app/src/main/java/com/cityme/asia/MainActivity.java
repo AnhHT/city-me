@@ -1,13 +1,16 @@
 package com.cityme.asia;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -72,8 +75,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             CustomContract.SuggestionEntry.KEY_SLUG
     };
     private static final int REQUEST_LOCATION = 0;
-    private final String TAG = MyMapFragment.class.getSimpleName();
-    private final String API_SEARCH = "http://api.cityme.asia/search?categories=&skip=0";
+    private final String TAG = MainActivity.class.getSimpleName();
+    private final String API_SEARCH = "https://api.cityme.vn/search?categories=&skip=0";
     private final String includeLocation = API_SEARCH + "&sort=near&location=";
     private GoogleMap mGoogleMap;
     private Context mContext;
@@ -138,12 +141,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "onConnected");
-        /*if (ActivityCompat.checkSelfPermission(this.mContext, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this.mContext, ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION}, REQUEST_LOCATION);
-        }*/
-
-        getLocation();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ActivityCompat.checkSelfPermission(this.mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this.mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_LOCATION);
+            }
+        } else {
+            getLocation();
+        }
     }
 
     @Override

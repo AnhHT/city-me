@@ -53,7 +53,6 @@ public class SuggestionFetchTask {
                 public void onResponse(String response) {
                     VolleyLog.v("Response:%n %s", response);
                     try {
-                        clearSuggestion();
                         final JSONObject obj = new JSONObject(response);
                         final List<SuggestionModel> suggestionModels = fromJson(obj);
                         insertSuggestion(suggestionModels);
@@ -62,12 +61,14 @@ public class SuggestionFetchTask {
 
                     } catch (JSONException e) {
                         e.printStackTrace();
+                        isLoading = false;
                     }
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     VolleyLog.e("Error: ", error.getMessage());
+                    isLoading = false;
                 }
             });
 
