@@ -44,11 +44,9 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.SphericalUtil;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -75,9 +73,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             CustomContract.SuggestionEntry.KEY_SLUG
     };
     private static final int REQUEST_LOCATION = 0;
-    private final String TAG = MainActivity.class.getSimpleName();
-    private final String API_SEARCH = "https://api.cityme.vn/search?categories=&skip=0";
-    private final String includeLocation = API_SEARCH + "&sort=near&location=";
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String INCLUDE_LOCATION = AppConfig.API_SEARCH + "?categories=&skip=0&sort=near&location=";
     private GoogleMap mGoogleMap;
     private Context mContext;
     private GoogleApiClient mGoogleApiClient;
@@ -319,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         this.initializeClusterManager();
         final String encodedValue = URLEncoder.encode(String.format("%s,%s",
                 this.currentLatLng.latitude, this.currentLatLng.longitude), "UTF-8");
-        final String formattedUrl = this.includeLocation + encodedValue;
+        final String formattedUrl = INCLUDE_LOCATION + encodedValue;
         Log.d(TAG, formattedUrl);
         StringRequest req = new StringRequest(formattedUrl, new Response.Listener<String>() {
             @Override
@@ -387,34 +384,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         final List<SearchModel> data = new ArrayList<>();
         final List<JSONObject> localBizsList = Utility.getLocalBizs(response);
         for (JSONObject biz : localBizsList) {
-            data.add(getItem(biz));
+            data.add(Utility.extractSearchItem(biz, this.currentLatLng));
         }
 
         return data;
-    }
-
-    private SearchModel getItem(JSONObject object) throws JSONException {
-        final JSONObject location = object.getJSONObject("location");
-        final JSONArray coo = location.getJSONArray("coordinates");
-        final JSONArray categories = object.getJSONArray("categories");
-        SearchModel model = new SearchModel(coo.getDouble(1), coo.getDouble(0));
-        model.setName(object.getString("name"));
-        model.setAddress(object.getString("address"));
-        model.setCity(object.getString("city"));
-        if (!object.get("rating").toString().equals("null")) {
-            model.setRating(object.getDouble("rating"));
-        }
-
-        if (object.has("mainPhoto")) {
-            model.setImageUrl(object.getString("mainPhoto"));
-        }
-
-        if (categories.length() > 0) {
-            model.setCategory(categories.getString(0));
-        }
-
-        model.setDistance(SphericalUtil.computeDistanceBetween(this.currentLatLng, model.getPosition()));
-
-        return model;
     }
 }
